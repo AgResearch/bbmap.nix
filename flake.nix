@@ -38,6 +38,12 @@
                 inherit hash;
               };
 
+              nativeBuildInputs = [ makeWrapper ];
+
+              buildInputs = [
+                openjdk
+              ];
+
               installPhase = ''
                 mkdir -p $out/bin
                 mv *.sh $out/bin
@@ -50,10 +56,15 @@
                 rm -rf *
               '';
 
-              propagatedBuildInputs = [
-                bash
-                openjdk
-              ];
+              postFixup = ''
+                for prog in $out/bin/*.sh; do
+                  wrapProgram "$prog" \
+                    --set PATH ${lib.makeBinPath [
+                      coreutils
+                      openjdk
+                    ]}
+                done
+              '';
 
               meta = {
                 homepage = "https://jgi.doe.gov/data-and-tools/software-tools/bbtools/bb-tools-user-guide/bbmap-guide/";
