@@ -41,6 +41,7 @@
               nativeBuildInputs = [ makeWrapper ];
 
               buildInputs = [
+                gawk
                 openjdk
               ];
 
@@ -57,12 +58,16 @@
               '';
 
               postFixup = ''
+                # wrap all the scripts except calcmem.sh, which gets sourced, and would break if wrapped
                 for prog in $out/bin/*.sh; do
-                  wrapProgram "$prog" \
-                    --set PATH ${lib.makeBinPath [
-                      coreutils
-                      openjdk
-                    ]}
+                  test "$prog" == "$out/bin/calcmem.sh" || {
+                    wrapProgram "$prog" \
+                      --set PATH $out/bin:${lib.makeBinPath [
+                        coreutils
+                        gawk
+                        openjdk
+                      ]}
+                  }
                 done
               '';
 
